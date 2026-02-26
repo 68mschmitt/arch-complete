@@ -6,6 +6,7 @@ import { useHydration } from './hooks/useHydration';
 import Palette from './components/Palette';
 import Canvas from './components/Canvas';
 import SidePanel from './components/SidePanel';
+import ExecutionPanel from './components/ExecutionPanel';
 import styles from './App.module.css';
 
 function App() {
@@ -16,6 +17,9 @@ function App() {
   const togglePalette = useStore(s => s.togglePalette);
   const darkMode = useStore(s => s.darkMode);
   const toggleDarkMode = useStore(s => s.toggleDarkMode);
+  const executionState = useStore(s => s.executionState);
+
+  const isExecuting = executionState !== 'idle';
 
   // Sync data-theme attribute on <html> with store state
   useEffect(() => {
@@ -46,8 +50,9 @@ function App() {
         <ReactFlowProvider>
           <Canvas />
         </ReactFlowProvider>
+        {isExecuting && <ExecutionPanel />}
       </div>
-      {sidePanelDefinitionId && <SidePanel />}
+      {!isExecuting && sidePanelDefinitionId && <SidePanel />}
     </div>
   );
 }

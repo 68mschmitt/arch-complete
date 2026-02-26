@@ -58,3 +58,62 @@
   color: var(--delete-color);
   border-color: var(--delete-color);
 }
+
+.typeSelect {
+  width: 100%;
+  padding: 4px 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  border: 1px solid var(--node-constant-input-border);
+  border-radius: 4px;
+  background-color: var(--node-constant-input-bg);
+  color: var(--node-constant-input-text);
+  cursor: pointer;
+}
+
+.typeSelect:focus {
+  outline: none;
+  border-color: var(--node-constant-input-focus);
+}
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkboxLabel {
+  font-size: 13px;
+  color: var(--node-constant-input-text);
+  user-select: none;
+}
+
+.execPending {
+  opacity: 0.5;
+  border-color: var(--exec-pending-border);
+}
+
+.execExecuting {
+  border-color: var(--exec-active-border);
+  background-color: var(--exec-active-bg);
+  box-shadow: 0 0 8px var(--exec-active-border);
+}
+
+.execCompleted {
+  border-color: var(--exec-completed-border);
+  background-color: var(--exec-completed-bg);
+}
+
+.execError {
+  border-color: var(--exec-error-border);
+  background-color: var(--exec-error-bg);
+}

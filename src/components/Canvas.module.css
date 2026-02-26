@@ -6,12 +6,20 @@
   flex-direction: column;
 }
 
-.heading {
+.headerGroup {
   position: absolute;
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.heading {
   padding: 6px 16px;
   background: var(--bg-surface);
   border: 1px solid var(--border-secondary);
@@ -20,7 +28,6 @@
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
-  pointer-events: none;
 }
 
 .emptyState {

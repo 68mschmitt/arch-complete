@@ -78,6 +78,31 @@
   /* Dark mode toggle */
   --toggle-bg: #e2e2e2;
   --toggle-fg: #333;
+
+  /* Execution state overlays */
+  --exec-pending-border: #d1d5db;
+  --exec-active-border: #3b82f6;
+  --exec-active-bg: rgba(59, 130, 246, 0.08);
+  --exec-completed-border: #22c55e;
+  --exec-completed-bg: rgba(34, 197, 94, 0.06);
+  --exec-error-border: #ef4444;
+  --exec-error-bg: rgba(239, 68, 68, 0.08);
+
+  /* Execution toolbar */
+  --exec-toolbar-bg: var(--bg-surface);
+  --exec-toolbar-border: var(--border-secondary);
+
+  /* Execution panel */
+  --exec-panel-bg: var(--bg-panel);
+  --exec-panel-header-bg: var(--bg-panel-header);
+  --exec-panel-separator: var(--border-primary);
+  --exec-value-bg: #f0f4f8;
+  --exec-value-text: #334155;
+
+  /* Popup / Modal overlay */
+  --popup-overlay: rgba(0, 0, 0, 0.3);
+  --popup-bg: var(--bg-surface);
+  --popup-border: var(--border-secondary);
 }
 
 /* ── Dark theme ── */
@@ -155,6 +180,31 @@
   /* Dark mode toggle */
   --toggle-bg: #334155;
   --toggle-fg: #e2e8f0;
+
+  /* Execution state overlays */
+  --exec-pending-border: #475569;
+  --exec-active-border: #60a5fa;
+  --exec-active-bg: rgba(96, 165, 250, 0.12);
+  --exec-completed-border: #4ade80;
+  --exec-completed-bg: rgba(74, 222, 128, 0.1);
+  --exec-error-border: #f87171;
+  --exec-error-bg: rgba(248, 113, 113, 0.12);
+
+  /* Execution toolbar */
+  --exec-toolbar-bg: var(--bg-surface);
+  --exec-toolbar-border: var(--border-secondary);
+
+  /* Execution panel */
+  --exec-panel-bg: var(--bg-panel);
+  --exec-panel-header-bg: var(--bg-panel-header);
+  --exec-panel-separator: var(--border-panel);
+  --exec-value-bg: #1e293b;
+  --exec-value-text: #cbd5e1;
+
+  /* Popup / Modal overlay */
+  --popup-overlay: rgba(0, 0, 0, 0.5);
+  --popup-bg: var(--bg-surface);
+  --popup-border: var(--border-secondary);
 }
 
 body {

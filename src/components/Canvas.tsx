@@ -5,6 +5,7 @@ import { nodeTypes } from '../nodes';
 import { useStore } from '../store/useStore';
 import { NODE_TYPES, PALETTE_DND_TYPE } from '../types';
 import { CanvasModeProvider } from '../contexts/CanvasMode';
+import ExecutionToolbar from './ExecutionToolbar';
 import styles from './Canvas.module.css';
 
 function Canvas() {
@@ -69,7 +70,7 @@ function Canvas() {
       let data: Record<string, unknown>;
       switch (nodeType) {
         case NODE_TYPES.CONSTANT:
-          data = { label: 'Constant', value: '' };
+          data = { label: 'Constant', value: '', valueType: 'string' };
           break;
         case NODE_TYPES.CUSTOM_REFERENCE: {
           // Look up definition name for the label
@@ -84,7 +85,7 @@ function Canvas() {
           data = { label: 'Output' };
           break;
         case NODE_TYPES.FUNCTION:
-          data = { label: 'Function' };
+          data = { label: 'Function', script: '', outputPorts: [] };
           break;
         default:
           data = { label: nodeType };
@@ -104,8 +105,11 @@ function Canvas() {
   return (
     <div className={styles.canvas} data-testid="canvas">
       {activeDefinition && (
-        <div className={styles.heading} data-testid="definition-heading">
-          {activeDefinition.name}
+        <div className={styles.headerGroup}>
+          <div className={styles.heading} data-testid="definition-heading">
+            {activeDefinition.name}
+          </div>
+          <ExecutionToolbar />
         </div>
       )}
       {activeDefinition ? (

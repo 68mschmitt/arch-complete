@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 import type { Node, NodeChange, EdgeChange, Connection } from '@xyflow/react';
 
-import type { NodeDefinition, Directory } from '../types';
+import type { NodeDefinition, Directory, ExecutionState, NodeExecutionResult } from '../types';
 import { NODE_TYPES } from '../types';
+import { topologicalSort, executeNode, resolveInputNames } from '../execution/engine';
 
 type StoreState = {
   definitions: NodeDefinition[];
@@ -12,6 +13,15 @@ type StoreState = {
   sidePanelDefinitionId: string | null;
   paletteCollapsed: boolean;
   darkMode: boolean;
+
+  // Execution state (transient — NOT persisted)
+  executionState: ExecutionState;
+  executionOrder: string[];
+  currentStepIndex: number;
+  nodeResults: Record<string, NodeExecutionResult>;
+  edgeValues: Record<string, unknown>;
+  executionError: string | null;
+  autoStepTimerId: ReturnType<typeof setTimeout> | null;
 };
 
 type StoreActions = {
@@ -42,9 +52,19 @@ type StoreActions = {
     paletteCollapsed?: boolean;
     darkMode?: boolean;
   }) => void;
+
+  // Execution actions
+  executionRun: () => void;
+  executionStep: () => void;
+  executionPause: () => void;
+  executionReset: () => void;
+  _executeNextNode: () => void;
+  _autoResetExecution: () => void;
 };
 
 type StoreType = StoreState & StoreActions;
+
+const AUTO_STEP_DELAY_MS = 400;
 
 export const useStore = create<StoreType>()((set, get) => ({
   // --- State ---
@@ -54,6 +74,15 @@ export const useStore = create<StoreType>()((set, get) => ({
   sidePanelDefinitionId: null,
   paletteCollapsed: false,
   darkMode: false,
+
+  // --- Execution State ---
+  executionState: 'idle',
+  executionOrder: [],
+  currentStepIndex: -1,
+  nodeResults: {},
+  edgeValues: {},
+  executionError: null,
+  autoStepTimerId: null,
 
   // --- Actions ---
 
@@ -118,6 +147,7 @@ export const useStore = create<StoreType>()((set, get) => ({
   },
 
   setActiveDefinition: (id: string) => {
+    get()._autoResetExecution();
     set({ activeDefinitionId: id });
   },
 
@@ -224,6 +254,8 @@ export const useStore = create<StoreType>()((set, get) => ({
     const { definitions, activeDefinitionId } = get();
     if (!activeDefinitionId) return;
 
+    get()._autoResetExecution();
+
     set({
       definitions: definitions.map((d) =>
         d.id === activeDefinitionId
@@ -236,6 +268,8 @@ export const useStore = create<StoreType>()((set, get) => ({
   removeNode: (nodeId: string) => {
     const { definitions, activeDefinitionId } = get();
     if (!activeDefinitionId) return;
+
+    get()._autoResetExecution();
 
     const activeDef = definitions.find(d => d.id === activeDefinitionId);
     if (!activeDef) return;
@@ -293,6 +327,8 @@ export const useStore = create<StoreType>()((set, get) => ({
     const { definitions, activeDefinitionId } = get();
     if (!activeDefinitionId) return;
 
+    get()._autoResetExecution();
+
     set({
       definitions: definitions.map((d) => {
         if (d.id !== activeDefinitionId) return d;
@@ -309,6 +345,12 @@ export const useStore = create<StoreType>()((set, get) => ({
   onNodesChange: (changes: NodeChange[]) => {
     const { definitions, activeDefinitionId } = get();
     if (!activeDefinitionId) return;
+
+    // Auto-reset execution on structural changes (not just selections/positions)
+    const structuralChange = changes.some((c) => c.type === 'remove' || c.type === 'add');
+    if (structuralChange) {
+      get()._autoResetExecution();
+    }
 
     // Separate remove changes to identify deleted Input/Output nodes
     const removeChanges = changes.filter((c) => c.type === 'remove');
@@ -371,6 +413,8 @@ export const useStore = create<StoreType>()((set, get) => ({
     const { definitions, activeDefinitionId } = get();
     if (!activeDefinitionId) return;
 
+    get()._autoResetExecution();
+
     set({
       definitions: definitions.map((d) => {
         if (d.id !== activeDefinitionId) return d;
@@ -385,6 +429,8 @@ export const useStore = create<StoreType>()((set, get) => ({
   onConnect: (connection: Connection) => {
     const { definitions, activeDefinitionId } = get();
     if (!activeDefinitionId) return;
+
+    get()._autoResetExecution();
 
     set({
       definitions: definitions.map((d) => {
@@ -435,5 +481,301 @@ export const useStore = create<StoreType>()((set, get) => ({
       paletteCollapsed: savedState.paletteCollapsed ?? false,
       darkMode: savedState.darkMode ?? false,
     });
+  },
+
+  // --- Execution Actions ---
+
+  _autoResetExecution: () => {
+    const { executionState, autoStepTimerId } = get();
+    if (executionState === 'idle') return;
+
+    if (autoStepTimerId !== null) {
+      clearTimeout(autoStepTimerId);
+    }
+
+    set({
+      executionState: 'idle',
+      executionOrder: [],
+      currentStepIndex: -1,
+      nodeResults: {},
+      edgeValues: {},
+      executionError: null,
+      autoStepTimerId: null,
+    });
+  },
+
+  executionReset: () => {
+    const { autoStepTimerId } = get();
+    if (autoStepTimerId !== null) {
+      clearTimeout(autoStepTimerId);
+    }
+
+    set({
+      executionState: 'idle',
+      executionOrder: [],
+      currentStepIndex: -1,
+      nodeResults: {},
+      edgeValues: {},
+      executionError: null,
+      autoStepTimerId: null,
+    });
+  },
+
+  executionRun: () => {
+    const { executionState, activeDefinitionId, definitions } = get();
+
+    // If paused, resume auto-stepping
+    if (executionState === 'paused' || executionState === 'stepping') {
+      set({ executionState: 'running' });
+      const timerId = setTimeout(() => get()._executeNextNode(), AUTO_STEP_DELAY_MS);
+      set({ autoStepTimerId: timerId });
+      return;
+    }
+
+    // If completed/error, reset first
+    if (executionState === 'completed' || executionState === 'error') {
+      get().executionReset();
+    }
+
+    if (!activeDefinitionId) return;
+    const definition = definitions.find((d) => d.id === activeDefinitionId);
+    if (!definition || definition.nodes.length === 0) return;
+
+    // Topological sort
+    const sortResult = topologicalSort(definition.nodes, definition.edges);
+    if (!sortResult.ok) {
+      set({
+        executionState: 'error',
+        executionError: sortResult.error,
+      });
+      return;
+    }
+
+    // Initialize node results
+    const nodeResults: Record<string, NodeExecutionResult> = {};
+    for (const nodeId of sortResult.order) {
+      nodeResults[nodeId] = {
+        status: 'pending',
+        inputValues: {},
+        outputValues: {},
+      };
+    }
+
+    set({
+      executionState: 'running',
+      executionOrder: sortResult.order,
+      currentStepIndex: -1,
+      nodeResults,
+      edgeValues: {},
+      executionError: null,
+    });
+
+    // Start auto-stepping
+    const timerId = setTimeout(() => get()._executeNextNode(), AUTO_STEP_DELAY_MS);
+    set({ autoStepTimerId: timerId });
+  },
+
+  executionStep: () => {
+    const { executionState, activeDefinitionId, definitions } = get();
+
+    // If running, pause first then we'll advance one step
+    if (executionState === 'running') {
+      const { autoStepTimerId } = get();
+      if (autoStepTimerId !== null) {
+        clearTimeout(autoStepTimerId);
+      }
+      set({ executionState: 'stepping', autoStepTimerId: null });
+      get()._executeNextNode();
+      return;
+    }
+
+    // If paused or stepping, advance one step
+    if (executionState === 'paused' || executionState === 'stepping') {
+      set({ executionState: 'stepping' });
+      get()._executeNextNode();
+      return;
+    }
+
+    // If completed/error, reset and start stepping
+    if (executionState === 'completed' || executionState === 'error') {
+      get().executionReset();
+    }
+
+    // Start fresh stepping
+    if (!activeDefinitionId) return;
+    const definition = definitions.find((d) => d.id === activeDefinitionId);
+    if (!definition || definition.nodes.length === 0) return;
+
+    const sortResult = topologicalSort(definition.nodes, definition.edges);
+    if (!sortResult.ok) {
+      set({
+        executionState: 'error',
+        executionError: sortResult.error,
+      });
+      return;
+    }
+
+    const nodeResults: Record<string, NodeExecutionResult> = {};
+    for (const nodeId of sortResult.order) {
+      nodeResults[nodeId] = {
+        status: 'pending',
+        inputValues: {},
+        outputValues: {},
+      };
+    }
+
+    set({
+      executionState: 'stepping',
+      executionOrder: sortResult.order,
+      currentStepIndex: -1,
+      nodeResults,
+      edgeValues: {},
+      executionError: null,
+    });
+
+    // Execute first node
+    get()._executeNextNode();
+  },
+
+  executionPause: () => {
+    const { executionState, autoStepTimerId } = get();
+    if (executionState !== 'running') return;
+
+    if (autoStepTimerId !== null) {
+      clearTimeout(autoStepTimerId);
+    }
+
+    set({
+      executionState: 'paused',
+      autoStepTimerId: null,
+    });
+  },
+
+  _executeNextNode: () => {
+    const {
+      executionState,
+      executionOrder,
+      currentStepIndex,
+      nodeResults,
+      edgeValues,
+      activeDefinitionId,
+      definitions,
+    } = get();
+
+    if (executionState !== 'running' && executionState !== 'stepping') return;
+
+    const nextIndex = currentStepIndex + 1;
+    if (nextIndex >= executionOrder.length) {
+      // All nodes executed
+      set({ executionState: 'completed', currentStepIndex: nextIndex });
+      return;
+    }
+
+    const definition = definitions.find((d) => d.id === activeDefinitionId);
+    if (!definition) return;
+
+    const nodeId = executionOrder[nextIndex];
+    const node = definition.nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    // Gather input values from incoming edges
+    const incomingEdges = definition.edges.filter((e) => e.target === nodeId);
+    const inputNameMap = resolveInputNames(nodeId, definition.nodes, definition.edges);
+    const inputValues: Record<string, unknown> = {};
+
+    for (const edge of incomingEdges) {
+      const edgeKey = edge.sourceHandle ?? edge.source;
+      const nameKey = inputNameMap[edgeKey];
+      if (nameKey) {
+        const sourceOutputKey = edge.sourceHandle
+          ? `${edge.source}:${edge.sourceHandle}`
+          : edge.source;
+        inputValues[nameKey] = edgeValues[sourceOutputKey];
+      }
+    }
+
+    // For Input nodes, inject test values as the actual value
+    if (node.type === NODE_TYPES.INPUT) {
+      const testValues = ((node.data as Record<string, unknown>).testValues ?? {}) as Record<string, unknown>;
+      const label = (node.data as { label?: string })?.label ?? 'input';
+      const sanitized = label.replace(/[^a-zA-Z0-9_$]/g, '_');
+      if ('value' in testValues) {
+        inputValues[sanitized] = testValues['value'];
+      }
+    }
+
+    // Check for test value fallbacks (all node types)
+    const testValues = ((node.data as Record<string, unknown>).testValues ?? {}) as Record<string, unknown>;
+    for (const [key, value] of Object.entries(testValues)) {
+      if (!(key in inputValues) || inputValues[key] === undefined) {
+        inputValues[key] = value;
+      }
+    }
+
+    // Mark as executing
+    const updatedResults = {
+      ...nodeResults,
+      [nodeId]: {
+        ...nodeResults[nodeId],
+        status: 'executing' as const,
+        inputValues: { ...inputValues },
+      },
+    };
+    set({ nodeResults: updatedResults, currentStepIndex: nextIndex });
+
+    // Execute the node
+    const result = executeNode(node, inputValues, definitions);
+
+    // Update edge values with outputs
+    const newEdgeValues = { ...edgeValues };
+    const outputEntries = Object.entries(result.outputValues);
+    if (outputEntries.length >= 1) {
+      const [, firstValue] = outputEntries[0];
+      newEdgeValues[nodeId] = firstValue;
+
+      // Store under specific handle IDs
+      const outgoingEdges = definition.edges.filter((e) => e.source === nodeId);
+      for (const edge of outgoingEdges) {
+        if (edge.sourceHandle) {
+          newEdgeValues[`${nodeId}:${edge.sourceHandle}`] = firstValue;
+        }
+      }
+    }
+    for (const [portName, value] of outputEntries) {
+      newEdgeValues[`${nodeId}:${portName}`] = value;
+    }
+
+    // Update results
+    const finalResults = {
+      ...updatedResults,
+      [nodeId]: {
+        status: result.error ? 'error' as const : 'completed' as const,
+        inputValues: { ...inputValues },
+        outputValues: result.outputValues,
+        error: result.error,
+      },
+    };
+
+    if (result.error) {
+      set({
+        nodeResults: finalResults,
+        edgeValues: newEdgeValues,
+        executionState: 'error',
+        executionError: `Error in node "${((node.data as { label?: string })?.label) ?? nodeId}": ${result.error}`,
+      });
+      return;
+    }
+
+    set({
+      nodeResults: finalResults,
+      edgeValues: newEdgeValues,
+    });
+
+    // If running (auto-step), schedule next
+    if (executionState === 'running') {
+      const timerId = setTimeout(() => get()._executeNextNode(), AUTO_STEP_DELAY_MS);
+      set({ autoStepTimerId: timerId });
+    }
+    // If stepping, we're done until user clicks again
   },
 }));
