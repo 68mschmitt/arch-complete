@@ -14,3 +14,10 @@ Primitive nodes include...
 
 When a custom node is used in another custom node, the connections the representing box will have available will correspond to the inputs and outputs that the custom node has defined internally
 - The location of the connection dots will reflect the layout and orientation of the inputs and outputs defined within the custom node
+
+---
+
+# Tech
+- React
+- React Flow
+- Typescript
