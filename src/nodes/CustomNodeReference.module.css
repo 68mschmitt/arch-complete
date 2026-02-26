@@ -32,23 +32,6 @@
   text-align: center;
 }
 
-.handleLabel {
-  font-size: 10px;
-  color: #6b7280;
-  position: absolute;
-  white-space: nowrap;
-  pointer-events: none;
-}
-
-.handleLabelLeft {
-  composes: handleLabel;
-  left: 12px;
-}
-
-.handleLabelRight {
-  composes: handleLabel;
-  right: 12px;
-}
 
 .deleteButton {
   position: absolute;

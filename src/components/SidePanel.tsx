@@ -1,7 +1,5 @@
-import { ReactFlowProvider, ReactFlow } from '@xyflow/react';
 import { useStore } from '../store/useStore';
-import { nodeTypes } from '../nodes';
-import { CanvasModeProvider } from '../contexts/CanvasMode';
+import { NODE_TYPES } from '../types';
 import styles from './SidePanel.module.css';
 
 function SidePanel() {
@@ -24,6 +22,9 @@ function SidePanel() {
     setSidePanelDefinition(null);
   };
 
+  const inputs = definition.nodes.filter(n => n.type === NODE_TYPES.INPUT);
+  const outputs = definition.nodes.filter(n => n.type === NODE_TYPES.OUTPUT);
+
   return (
     <div className={styles.panel} data-testid="side-panel">
       <div className={styles.header}>
@@ -45,24 +46,26 @@ function SidePanel() {
           </button>
         </div>
       </div>
-      <div className={styles.preview}>
-        <ReactFlowProvider>
-          <CanvasModeProvider mode="preview">
-            <ReactFlow
-              nodes={definition.nodes}
-              edges={definition.edges}
-              nodeTypes={nodeTypes}
-              nodesDraggable={false}
-              nodesConnectable={false}
-              elementsSelectable={false}
-              panOnDrag={false}
-              zoomOnScroll={false}
-              zoomOnDoubleClick={false}
-              preventScrolling={false}
-              fitView
-            />
-          </CanvasModeProvider>
-        </ReactFlowProvider>
+      <div className={styles.interfaceView}>
+        <div className={styles.inputList}>
+          {inputs.map(node => (
+            <div key={node.id} className={styles.connectionLabel}>
+              {(node.data as { label?: string }).label ?? 'Input'}
+              <span className={styles.connector}>&#x2500;</span>
+            </div>
+          ))}
+        </div>
+        <div className={styles.nodeBox}>
+          <span className={styles.nodeBoxName}>{definition.name}</span>
+        </div>
+        <div className={styles.outputList}>
+          {outputs.map(node => (
+            <div key={node.id} className={styles.connectionLabel}>
+              <span className={styles.connector}>&#x2500;</span>
+              {(node.data as { label?: string }).label ?? 'Output'}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

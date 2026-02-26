@@ -108,47 +108,27 @@ function CustomNodeReference({
       </div>
 
       {inputs.map((inputNode, index) => (
-        <div key={inputNode.id}>
-          <Handle
-            type="target"
-            position={Position.Left}
-            id={`input-${inputNode.id}`}
-            style={{
-              top: `${(100 / (inputCount + 1)) * (index + 1)}%`,
-            }}
-          />
-          <span
-            className={styles.handleLabelLeft}
-            style={{
-              top: `${(100 / (inputCount + 1)) * (index + 1)}%`,
-              transform: 'translateY(-50%)',
-            }}
-          >
-            {(inputNode.data as { label?: string }).label ?? 'Input'}
-          </span>
-        </div>
+        <Handle
+          key={inputNode.id}
+          type="target"
+          position={Position.Left}
+          id={`input-${inputNode.id}`}
+          style={{
+            top: `${(100 / (inputCount + 1)) * (index + 1)}%`,
+          }}
+        />
       ))}
 
       {outputs.map((outputNode, index) => (
-        <div key={outputNode.id}>
-          <Handle
-            type="source"
-            position={Position.Right}
-            id={`output-${outputNode.id}`}
-            style={{
-              top: `${(100 / (outputCount + 1)) * (index + 1)}%`,
-            }}
-          />
-          <span
-            className={styles.handleLabelRight}
-            style={{
-              top: `${(100 / (outputCount + 1)) * (index + 1)}%`,
-              transform: 'translateY(-50%)',
-            }}
-          >
-            {(outputNode.data as { label?: string }).label ?? 'Output'}
-          </span>
-        </div>
+        <Handle
+          key={outputNode.id}
+          type="source"
+          position={Position.Right}
+          id={`output-${outputNode.id}`}
+          style={{
+            top: `${(100 / (outputCount + 1)) * (index + 1)}%`,
+          }}
+        />
       ))}
       {mode === 'edit' && (
         <button
