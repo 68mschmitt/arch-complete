@@ -73,3 +73,65 @@
 .newNodeButton:active {
   background-color: #004085;
 }
+
+.customEntry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: grab;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.customEntry:hover {
+  background-color: #f0f0f0;
+  border-color: #999;
+  transform: translateX(2px);
+}
+
+.customEntry:active {
+  cursor: grabbing;
+}
+
+.entryName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.renameInput {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font-size: inherit;
+  font-family: inherit;
+  border: 1px solid #007bff;
+  border-radius: 3px;
+  outline: none;
+  background-color: #fff;
+}
+
+.deleteButton {
+  flex-shrink: 0;
+  margin-left: 8px;
+  padding: 0 4px;
+  font-size: 16px;
+  line-height: 1;
+  color: #999;
+  background: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.deleteButton:hover {
+  color: #e53e3e;
+}

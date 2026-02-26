@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react';
+import { memo, useEffect, useState, useCallback } from 'react';
 import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
 import type { CustomNodeReferenceData } from '../types';
@@ -10,7 +10,29 @@ function CustomNodeReference({
   id,
   data,
 }: NodeProps<Node<CustomNodeReferenceData>>) {
+  const updateNodeData = useStore((state) => state.updateNodeData);
+  const [editingLabel, setEditingLabel] = useState(false);
+  const [draftLabel, setDraftLabel] = useState(data.label);
   const updateNodeInternals = useUpdateNodeInternals();
+
+  const handleDoubleClick = useCallback(() => {
+    setEditingLabel(true);
+    setDraftLabel(data.label);
+  }, [data.label]);
+
+  const handleSaveLabel = useCallback(() => {
+    setEditingLabel(false);
+    updateNodeData(id, { label: draftLabel });
+  }, [id, draftLabel, updateNodeData]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveLabel();
+    } else if (e.key === 'Escape') {
+      setEditingLabel(false);
+      setDraftLabel(data.label);
+    }
+  }, [handleSaveLabel, data.label]);
 
   const definition = useStore((state) =>
     state.definitions.find((d) => d.id === data.definitionId) ?? null,
@@ -33,14 +55,40 @@ function CustomNodeReference({
   if (!definition) {
     return (
       <div className={styles.orphanedNode}>
-        <div className={styles.orphanedLabel}>Missing: {data.label}</div>
+        <div className={styles.orphanedLabel}>
+          {editingLabel ? (
+            <input
+              className="nodrag"
+              value={draftLabel}
+              onChange={(e) => setDraftLabel(e.target.value)}
+              onBlur={handleSaveLabel}
+              onKeyDown={handleKeyDown}
+              autoFocus
+            />
+          ) : (
+            <span onDoubleClick={handleDoubleClick}>Missing: {data.label}</span>
+          )}
+        </div>
       </div>
     );
   }
 
   return (
     <div className={styles.node}>
-      <div className={styles.name}>{definition.name}</div>
+      <div className={styles.name}>
+        {editingLabel ? (
+          <input
+            className="nodrag"
+            value={draftLabel}
+            onChange={(e) => setDraftLabel(e.target.value)}
+            onBlur={handleSaveLabel}
+            onKeyDown={handleKeyDown}
+            autoFocus
+          />
+        ) : (
+          <span onDoubleClick={handleDoubleClick}>{definition.name}</span>
+        )}
+      </div>
 
       {inputs.map((inputNode, index) => (
         <div key={inputNode.id}>

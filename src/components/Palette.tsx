@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { NODE_TYPES, PALETTE_DND_TYPE } from '../types';
 import styles from './Palette.module.css';
@@ -6,6 +7,12 @@ function Palette() {
   const definitions = useStore((s) => s.definitions);
   const addDefinition = useStore((s) => s.addDefinition);
   const setActiveDefinition = useStore((s) => s.setActiveDefinition);
+  const renameDefinition = useStore((s) => s.renameDefinition);
+  const removeDefinition = useStore((s) => s.removeDefinition);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
 
   const primitives = [
     { type: NODE_TYPES.INPUT, label: 'Input' },
@@ -47,6 +54,38 @@ function Palette() {
     setActiveDefinition(definitionId);
   };
 
+  const handleDoubleClick = (defId: string, currentName: string) => {
+    setEditingId(defId);
+    setEditName(currentName);
+  };
+
+  const handleRenameCommit = () => {
+    if (editingId) {
+      renameDefinition(editingId, editName);
+      setEditingId(null);
+    }
+  };
+
+  const handleRenameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleRenameCommit();
+    } else if (e.key === 'Escape') {
+      setEditingId(null);
+    }
+  };
+
+  const handleDelete = (e: React.MouseEvent, defId: string) => {
+    e.stopPropagation();
+    removeDefinition(defId);
+  };
+
+  useEffect(() => {
+    if (editingId && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [editingId]);
+
   return (
     <div className={styles.palette} data-testid="palette">
       <div className={styles.section} data-testid="palette-primitives">
@@ -79,12 +118,33 @@ function Palette() {
         {definitions.map((def) => (
           <div
             key={def.id}
-            className={styles.paletteItem}
-            draggable
+            className={styles.customEntry}
+            draggable={editingId !== def.id}
             onDragStart={(e) => handleCustomDragStart(e, def.id)}
             onClick={() => handleCustomNodeClick(def.id)}
+            onDoubleClick={() => handleDoubleClick(def.id, def.name)}
           >
-            {def.name}
+            {editingId === def.id ? (
+              <input
+                ref={renameInputRef}
+                className={styles.renameInput}
+                data-testid="rename-definition-input"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onBlur={handleRenameCommit}
+                onKeyDown={handleRenameKeyDown}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <span className={styles.entryName}>{def.name}</span>
+            )}
+            <button
+              className={styles.deleteButton}
+              data-testid="delete-definition-button"
+              onClick={(e) => handleDelete(e, def.id)}
+            >
+              ×
+            </button>
           </div>
         ))}
       </div>

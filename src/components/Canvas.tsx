@@ -140,7 +140,7 @@ function Canvas() {
           fitView
         />
       ) : (
-        <div className={styles.emptyState}>
+        <div className={styles.emptyState} data-testid="empty-state">
           Select or create a definition to begin
         </div>
       )}

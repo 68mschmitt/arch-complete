@@ -25,6 +25,7 @@ type StoreActions = {
   onConnect: (connection: Connection) => void;
   getDefinition: (id: string) => NodeDefinition | undefined;
   getInputOutputNodes: (definitionId: string) => { inputs: Node[]; outputs: Node[] };
+  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null }) => void;
 };
 
 type StoreType = StoreState & StoreActions;
@@ -121,16 +122,54 @@ export const useStore = create<StoreType>()((set, get) => ({
     const { definitions, activeDefinitionId } = get();
     if (!activeDefinitionId) return;
 
+    const activeDef = definitions.find(d => d.id === activeDefinitionId);
+    if (!activeDef) return;
+
+    const removedNode = activeDef.nodes.find(n => n.id === nodeId);
+    if (!removedNode) return;
+
+    // Check if the removed node is an Input or Output (interface node)
+    const isInterfaceNode = removedNode.type === NODE_TYPES.INPUT || removedNode.type === NODE_TYPES.OUTPUT;
+
+    // Build the handle ID that will disappear from instances of this definition
+    let removedHandleId: string | null = null;
+    if (isInterfaceNode) {
+      removedHandleId = removedNode.type === NODE_TYPES.INPUT
+        ? `input-${nodeId}`
+        : `output-${nodeId}`;
+    }
+
     set({
       definitions: definitions.map((d) => {
-        if (d.id !== activeDefinitionId) return d;
-        return {
-          ...d,
-          nodes: d.nodes.filter((n) => n.id !== nodeId),
-          edges: d.edges.filter(
-            (e) => e.source !== nodeId && e.target !== nodeId,
-          ),
-        };
+        if (d.id === activeDefinitionId) {
+          // Remove the node and its direct edges from active definition
+          return {
+            ...d,
+            nodes: d.nodes.filter((n) => n.id !== nodeId),
+            edges: d.edges.filter(
+              (e) => e.source !== nodeId && e.target !== nodeId,
+            ),
+          };
+        }
+
+        // For other definitions: clean up edges connected to the removed handle
+        if (removedHandleId) {
+          const hasInstances = d.nodes.some(
+            (n) => n.type === NODE_TYPES.CUSTOM_REFERENCE &&
+                   (n.data as { definitionId?: string }).definitionId === activeDefinitionId,
+          );
+
+          if (hasInstances) {
+            return {
+              ...d,
+              edges: d.edges.filter((e) => {
+                return e.sourceHandle !== removedHandleId && e.targetHandle !== removedHandleId;
+              }),
+            };
+          }
+        }
+
+        return d;
       }),
     });
   },
@@ -215,5 +254,12 @@ export const useStore = create<StoreType>()((set, get) => ({
     );
 
     return { inputs, outputs };
+  },
+
+  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null }) => {
+    set({
+      definitions: savedState.definitions,
+      activeDefinitionId: savedState.activeDefinitionId,
+    });
   },
 }));
