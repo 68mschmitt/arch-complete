@@ -14,7 +14,7 @@ function Canvas() {
   );
 
   // React Flow utilities
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, zoomIn, zoomOut } = useReactFlow();
 
   // Store actions
   const onNodesChange = useStore((s) => s.onNodesChange);
@@ -128,6 +128,24 @@ function Canvas() {
           >
             <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
           </ReactFlow>
+            <div className={styles.zoomControls} data-testid="zoom-controls">
+              <button
+                className={styles.zoomButton}
+                onClick={() => zoomIn()}
+                data-testid="zoom-in"
+                title="Zoom in"
+              >
+                +
+              </button>
+              <button
+                className={styles.zoomButton}
+                onClick={() => zoomOut()}
+                data-testid="zoom-out"
+                title="Zoom out"
+              >
+                −
+              </button>
+            </div>
         </CanvasModeProvider>
       ) : (
         <div className={styles.emptyState} data-testid="empty-state">
