@@ -50,4 +50,5 @@ export type AppState = {
   activeDefinitionId: string | null;
   sidePanelDefinitionId: string | null;
   paletteCollapsed: boolean;
+  darkMode: boolean;
 };

@@ -25,6 +25,7 @@ function Canvas() {
   const setActiveDefinition = useStore((s) => s.setActiveDefinition);
   const setSidePanelDefinition = useStore((s) => s.setSidePanelDefinition);
   const addNode = useStore((s) => s.addNode);
+  const darkMode = useStore((s) => s.darkMode);
 
   // Handle node click — open side panel for custom nodes
   const handleNodeClick = useCallback(
@@ -139,6 +140,7 @@ function Canvas() {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             nodeTypes={nodeTypes}
+            colorMode={darkMode ? 'dark' : 'light'}
             snapToGrid
             snapGrid={[20, 20]}
             fitView

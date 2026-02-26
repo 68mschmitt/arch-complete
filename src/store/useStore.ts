@@ -10,6 +10,7 @@ type StoreState = {
   activeDefinitionId: string | null;
   sidePanelDefinitionId: string | null;
   paletteCollapsed: boolean;
+  darkMode: boolean;
 };
 
 type StoreActions = {
@@ -19,6 +20,7 @@ type StoreActions = {
   setActiveDefinition: (id: string) => void;
   setSidePanelDefinition: (id: string | null) => void;
   togglePalette: () => void;
+  toggleDarkMode: () => void;
   addNode: (node: Node) => void;
   removeNode: (nodeId: string) => void;
   updateNodeData: (nodeId: string, data: Partial<Record<string, unknown>>) => void;
@@ -27,7 +29,7 @@ type StoreActions = {
   onConnect: (connection: Connection) => void;
   getDefinition: (id: string) => NodeDefinition | undefined;
   getInputOutputNodes: (definitionId: string) => { inputs: Node[]; outputs: Node[] };
-  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null; paletteCollapsed?: boolean }) => void;
+  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null; paletteCollapsed?: boolean; darkMode?: boolean }) => void;
 };
 
 type StoreType = StoreState & StoreActions;
@@ -38,6 +40,7 @@ export const useStore = create<StoreType>()((set, get) => ({
   activeDefinitionId: null,
   sidePanelDefinitionId: null,
   paletteCollapsed: false,
+  darkMode: false,
 
   // --- Actions ---
 
@@ -110,6 +113,10 @@ export const useStore = create<StoreType>()((set, get) => ({
 
   togglePalette: () => {
     set({ paletteCollapsed: !get().paletteCollapsed });
+  },
+
+  toggleDarkMode: () => {
+    set({ darkMode: !get().darkMode });
   },
 
   addNode: (node: Node) => {
@@ -309,11 +316,12 @@ export const useStore = create<StoreType>()((set, get) => ({
     return { inputs, outputs };
   },
 
-  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null; paletteCollapsed?: boolean }) => {
+  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null; paletteCollapsed?: boolean; darkMode?: boolean }) => {
     set({
       definitions: savedState.definitions,
       activeDefinitionId: savedState.activeDefinitionId,
       paletteCollapsed: savedState.paletteCollapsed ?? false,
+      darkMode: savedState.darkMode ?? false,
     });
   },
 }));

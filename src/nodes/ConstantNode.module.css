@@ -1,8 +1,8 @@
 .node {
   min-width: 150px;
   padding: 10px 12px;
-  background-color: #fef3c7;
-  border: 1px solid #fcd34d;
+  background-color: var(--node-constant-bg);
+  border: 1px solid var(--node-constant-border);
   border-radius: 6px;
   position: relative;
 }
@@ -10,7 +10,7 @@
 .label {
   font-size: 14px;
   font-weight: 500;
-  color: #92400e;
+  color: var(--node-constant-text);
   margin-bottom: 6px;
 }
 
@@ -18,15 +18,15 @@
   width: 100%;
   padding: 4px 6px;
   font-size: 13px;
-  border: 1px solid #d97706;
+  border: 1px solid var(--node-constant-input-border);
   border-radius: 4px;
-  background-color: #fffbeb;
-  color: #78350f;
+  background-color: var(--node-constant-input-bg);
+  color: var(--node-constant-input-text);
 }
 
 .input:focus {
   outline: none;
-  border-color: #f59e0b;
+  border-color: var(--node-constant-input-focus);
 }
 
 .deleteButton {
@@ -40,9 +40,9 @@
   justify-content: center;
   font-size: 14px;
   line-height: 1;
-  color: #999;
-  background: #fff;
-  border: 1px solid #ddd;
+  color: var(--node-delete-color);
+  background: var(--node-delete-bg);
+  border: 1px solid var(--node-delete-border);
   border-radius: 50%;
   cursor: pointer;
   opacity: 0;
@@ -55,6 +55,6 @@
 }
 
 .deleteButton:hover {
-  color: #e53e3e;
-  border-color: #e53e3e;
+  color: var(--delete-color);
+  border-color: var(--delete-color);
 }

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ReactFlowProvider } from '@xyflow/react';
 import { useStore } from './store/useStore';
 import { usePersistence } from './hooks/usePersistence';
@@ -13,9 +14,24 @@ function App() {
   const sidePanelDefinitionId = useStore(s => s.sidePanelDefinitionId);
   const paletteCollapsed = useStore(s => s.paletteCollapsed);
   const togglePalette = useStore(s => s.togglePalette);
-  
+  const darkMode = useStore(s => s.darkMode);
+  const toggleDarkMode = useStore(s => s.toggleDarkMode);
+
+  // Sync data-theme attribute on <html> with store state
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
   return (
     <div className={styles.container}>
+      <button
+        className={styles.darkModeToggle}
+        onClick={toggleDarkMode}
+        data-testid="dark-mode-toggle"
+        title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {darkMode ? '☀️' : '🌙'}
+      </button>
       <div className={styles.mainRow}>
         <div className={`${styles.paletteWrapper} ${paletteCollapsed ? styles.paletteCollapsed : ''}`}>
           <Palette />

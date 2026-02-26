@@ -2,7 +2,165 @@
   box-sizing: border-box;
 }
 
+/* ── Light theme (default) ── */
+:root {
+  /* Chrome / Layout */
+  --bg-app: #ffffff;
+  --bg-panel: #f5f5f5;
+  --bg-panel-header: #f9f9f9;
+  --bg-surface: #ffffff;
+  --bg-hover: #e8e8e8;
+  --bg-item-hover: #f0f0f0;
+
+  --border-primary: #ddd;
+  --border-secondary: #ccc;
+  --border-panel: #e0e0e0;
+
+  --text-primary: #333;
+  --text-secondary: #666;
+  --text-muted: #888;
+  --text-placeholder: #999;
+
+  --accent-blue: #007bff;
+  --accent-blue-hover: #0056b3;
+  --accent-blue-active: #004085;
+  --accent-blue-soft: #4a90e2;
+  --accent-blue-soft-hover: #357abd;
+
+  --delete-color: #e53e3e;
+
+  /* Palette divider */
+  --divider-color: #ddd;
+
+  /* Input node */
+  --node-input-bg: #dbeafe;
+  --node-input-border: #93c5fd;
+  --node-input-text: #1e40af;
+
+  /* Output node */
+  --node-output-bg: #d1fae5;
+  --node-output-border: #6ee7b7;
+  --node-output-text: #047857;
+
+  /* Function node */
+  --node-function-bg: #e9d5ff;
+  --node-function-border: #c084fc;
+  --node-function-text: #6b21a8;
+
+  /* Constant node */
+  --node-constant-bg: #fef3c7;
+  --node-constant-border: #fcd34d;
+  --node-constant-text: #92400e;
+  --node-constant-input-bg: #fffbeb;
+  --node-constant-input-text: #78350f;
+  --node-constant-input-border: #d97706;
+  --node-constant-input-focus: #f59e0b;
+
+  /* Custom / reference node */
+  --node-custom-bg: #f0fdf4;
+  --node-custom-border: #86efac;
+  --node-custom-text: #166534;
+
+  /* Orphaned node */
+  --node-orphan-bg: #ffcccc;
+  --node-orphan-border: #ef4444;
+  --node-orphan-text: #991b1b;
+
+  /* Node delete button */
+  --node-delete-bg: #fff;
+  --node-delete-border: #ddd;
+  --node-delete-color: #999;
+
+  /* Side panel interface view */
+  --interface-connector: #aaa;
+  --interface-label: #555;
+
+  /* Dark mode toggle */
+  --toggle-bg: #e2e2e2;
+  --toggle-fg: #333;
+}
+
+/* ── Dark theme ── */
+[data-theme="dark"] {
+  /* Chrome / Layout */
+  --bg-app: #1a1a2e;
+  --bg-panel: #16213e;
+  --bg-panel-header: #1a1a2e;
+  --bg-surface: #1e293b;
+  --bg-hover: #2a2a4a;
+  --bg-item-hover: #253352;
+
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  --border-panel: #334155;
+
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-placeholder: #64748b;
+
+  --accent-blue: #3b82f6;
+  --accent-blue-hover: #60a5fa;
+  --accent-blue-active: #2563eb;
+  --accent-blue-soft: #3b82f6;
+  --accent-blue-soft-hover: #60a5fa;
+
+  --delete-color: #f87171;
+
+  --divider-color: #334155;
+
+  /* Input node */
+  --node-input-bg: #1e3a5f;
+  --node-input-border: #3b82f6;
+  --node-input-text: #93c5fd;
+
+  /* Output node */
+  --node-output-bg: #064e3b;
+  --node-output-border: #34d399;
+  --node-output-text: #6ee7b7;
+
+  /* Function node */
+  --node-function-bg: #3b1e6b;
+  --node-function-border: #a855f7;
+  --node-function-text: #c4b5fd;
+
+  /* Constant node */
+  --node-constant-bg: #451a03;
+  --node-constant-border: #f59e0b;
+  --node-constant-text: #fcd34d;
+  --node-constant-input-bg: #3b1a04;
+  --node-constant-input-text: #fde68a;
+  --node-constant-input-border: #b45309;
+  --node-constant-input-focus: #d97706;
+
+  /* Custom / reference node */
+  --node-custom-bg: #052e16;
+  --node-custom-border: #4ade80;
+  --node-custom-text: #86efac;
+
+  /* Orphaned node */
+  --node-orphan-bg: #450a0a;
+  --node-orphan-border: #ef4444;
+  --node-orphan-text: #fca5a5;
+
+  /* Node delete button */
+  --node-delete-bg: #1e293b;
+  --node-delete-border: #475569;
+  --node-delete-color: #64748b;
+
+  /* Side panel interface view */
+  --interface-connector: #64748b;
+  --interface-label: #94a3b8;
+
+  /* Dark mode toggle */
+  --toggle-bg: #334155;
+  --toggle-fg: #e2e8f0;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }

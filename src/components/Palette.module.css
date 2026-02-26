@@ -1,8 +1,8 @@
 .palette {
   width: 250px;
   flex-shrink: 0;
-  background-color: #f5f5f5;
-  border-right: 1px solid #ddd;
+  background-color: var(--bg-panel);
+  border-right: 1px solid var(--border-primary);
   overflow-y: auto;
   padding: 16px;
 }
@@ -14,7 +14,7 @@
 .sectionHeader {
   font-weight: 600;
   font-size: 14px;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -29,24 +29,25 @@
 
 .divider {
   height: 1px;
-  background-color: #ddd;
+  background-color: var(--divider-color);
   margin: 20px 0;
 }
 
 .paletteItem {
   padding: 10px 12px;
   margin-bottom: 8px;
-  background-color: #fff;
-  border: 1px solid #ccc;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-secondary);
   border-radius: 4px;
   cursor: grab;
   transition: all 0.2s ease;
   user-select: none;
+  color: var(--text-primary);
 }
 
 .paletteItem:hover {
-  background-color: #f0f0f0;
-  border-color: #999;
+  background-color: var(--bg-item-hover);
+  border-color: var(--border-secondary);
   transform: translateX(2px);
 }
 
@@ -59,7 +60,7 @@
   font-size: 12px;
   font-weight: 500;
   color: #fff;
-  background-color: #007bff;
+  background-color: var(--accent-blue);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -67,11 +68,11 @@
 }
 
 .newNodeButton:hover {
-  background-color: #0056b3;
+  background-color: var(--accent-blue-hover);
 }
 
 .newNodeButton:active {
-  background-color: #004085;
+  background-color: var(--accent-blue-active);
 }
 
 .customEntry {
@@ -80,17 +81,18 @@
   justify-content: space-between;
   padding: 10px 12px;
   margin-bottom: 8px;
-  background-color: #fff;
-  border: 1px solid #ccc;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-secondary);
   border-radius: 4px;
   cursor: grab;
   transition: all 0.2s ease;
   user-select: none;
+  color: var(--text-primary);
 }
 
 .customEntry:hover {
-  background-color: #f0f0f0;
-  border-color: #999;
+  background-color: var(--bg-item-hover);
+  border-color: var(--border-secondary);
   transform: translateX(2px);
 }
 
@@ -112,10 +114,11 @@
   padding: 4px 8px;
   font-size: inherit;
   font-family: inherit;
-  border: 1px solid #007bff;
+  border: 1px solid var(--accent-blue);
   border-radius: 3px;
   outline: none;
-  background-color: #fff;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .deleteButton {
@@ -124,7 +127,7 @@
   padding: 0 4px;
   font-size: 16px;
   line-height: 1;
-  color: #999;
+  color: var(--text-placeholder);
   background: none;
   border: none;
   border-radius: 3px;
@@ -133,5 +136,5 @@
 }
 
 .deleteButton:hover {
-  color: #e53e3e;
+  color: var(--delete-color);
 }
