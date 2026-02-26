@@ -3,26 +3,28 @@ import { createPortal } from 'react-dom';
 import { useStore } from '../store/useStore';
 import styles from './ScriptEditorPopup.module.css';
 
+const DEFAULT_SCRIPT = `function process(inputs) {
+  // inputs.name — access input values by name
+  // Return an object with your output values
+  return {
+    output: inputs.input
+  };
+}`;
+
 type ScriptEditorPopupProps = {
   nodeId: string;
   initialScript: string;
-  initialOutputPorts: string[];
   onClose: () => void;
 };
 
-function ScriptEditorPopup({ nodeId, initialScript, initialOutputPorts, onClose }: ScriptEditorPopupProps) {
+function ScriptEditorPopup({ nodeId, initialScript, onClose }: ScriptEditorPopupProps) {
   const updateNodeData = useStore(s => s.updateNodeData);
-  const [script, setScript] = useState(initialScript);
-  const [outputPortsText, setOutputPortsText] = useState(initialOutputPorts.join(', '));
+  const [script, setScript] = useState(initialScript || DEFAULT_SCRIPT);
 
   const handleSave = useCallback(() => {
-    const outputPorts = outputPortsText
-      .split(',')
-      .map(p => p.trim())
-      .filter(p => p.length > 0);
-    updateNodeData(nodeId, { script, outputPorts });
+    updateNodeData(nodeId, { script });
     onClose();
-  }, [nodeId, script, outputPortsText, updateNodeData, onClose]);
+  }, [nodeId, script, updateNodeData, onClose]);
 
   const handleCancel = useCallback(() => {
     onClose();
@@ -34,14 +36,12 @@ function ScriptEditorPopup({ nodeId, initialScript, initialOutputPorts, onClose 
     }
   }, [handleCancel]);
 
-  // Close on overlay click
   const handleOverlayClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       handleCancel();
     }
   }, [handleCancel]);
 
-  // Prevent body scroll when popup is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -60,26 +60,12 @@ function ScriptEditorPopup({ nodeId, initialScript, initialOutputPorts, onClose 
         <h3 className={styles.title}>Edit Function Script</h3>
         
         <div className={styles.field}>
-          <label className={styles.label}>JavaScript Code</label>
           <textarea
             className={`nodrag ${styles.textarea}`}
             value={script}
             onChange={(e) => setScript(e.target.value)}
-            placeholder="// Your JavaScript code here&#10;// Inputs available as variables&#10;// Return value or set output ports"
-            rows={12}
+            rows={14}
             data-testid="script-editor-textarea"
-          />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>Output Ports (comma-separated)</label>
-          <input
-            type="text"
-            className={`nodrag ${styles.input}`}
-            value={outputPortsText}
-            onChange={(e) => setOutputPortsText(e.target.value)}
-            placeholder="e.g., sum, product, result"
-            data-testid="script-editor-output-ports"
           />
         </div>
 

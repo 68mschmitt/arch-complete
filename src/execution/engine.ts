@@ -218,15 +218,20 @@ export function executeNode(
         return { outputValues: { [label]: firstInput } };
       }
 
-      const outputPorts = (nodeData.outputPorts as string[]) ?? [];
-      const { proxy, getResult } = createNodeProxy(inputValues, outputPorts);
-
       try {
-        // Execute user script with `node` as the proxy
-        const fn = new Function('node', script);
-        fn(proxy);
-        const { outputs } = getResult();
-        return { outputValues: outputs };
+        // User script defines a process(inputs) function.
+        // We execute the script then call process(inputs) and collect the returned object.
+        const fn = new Function('inputs', `${script}\nreturn process(inputs);`);
+        const result = fn(inputValues);
+        if (result === null || result === undefined) {
+          return { outputValues: {} };
+        }
+        if (typeof result !== 'object') {
+          // Scalar return — wrap with node label as key
+          const label = sanitizeIdentifier((nodeData.label as string) ?? 'output');
+          return { outputValues: { [label]: result } };
+        }
+        return { outputValues: result as Record<string, unknown> };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         return { outputValues: {}, error: message };

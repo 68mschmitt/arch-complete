@@ -124,7 +124,6 @@ function FunctionNode({ id, data, isConnectable }: NodeProps<Node<FunctionNodeDa
         <ScriptEditorPopup
           nodeId={id}
           initialScript={data.script || ''}
-          initialOutputPorts={data.outputPorts || []}
           onClose={handleCloseScriptEditor}
         />
       )}

@@ -85,7 +85,7 @@ function Canvas() {
           data = { label: 'Output' };
           break;
         case NODE_TYPES.FUNCTION:
-          data = { label: 'Function', script: '', outputPorts: [] };
+          data = { label: 'Function', script: '' };
           break;
         default:
           data = { label: nodeType };
