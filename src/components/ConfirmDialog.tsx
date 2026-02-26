@@ -3,11 +3,12 @@ import styles from './ConfirmDialog.module.css';
 
 type ConfirmDialogProps = {
   message: string;
+  confirmLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
 };
 
-function ConfirmDialog({ message, onConfirm, onCancel }: ConfirmDialogProps) {
+function ConfirmDialog({ message, confirmLabel = 'Delete', onConfirm, onCancel }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -46,7 +47,7 @@ function ConfirmDialog({ message, onConfirm, onCancel }: ConfirmDialogProps) {
             data-testid="confirm-dialog-confirm"
             onClick={onConfirm}
           >
-            Delete
+            {confirmLabel}
           </button>
         </div>
       </div>

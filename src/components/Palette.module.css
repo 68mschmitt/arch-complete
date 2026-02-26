@@ -255,3 +255,30 @@
 .deleteButton:hover {
   color: var(--delete-color);
 }
+
+/* --- Import / Export section --- */
+
+.importExportActions {
+  display: flex;
+  gap: 8px;
+}
+
+.exportButton,
+.importButton {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-secondary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.exportButton:hover,
+.importButton:hover {
+  background-color: var(--bg-item-hover);
+  border-color: var(--border-primary);
+}

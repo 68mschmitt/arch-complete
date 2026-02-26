@@ -35,6 +35,7 @@ function Palette() {
   // --- Confirmation dialog ---
   const [confirmAction, setConfirmAction] = useState<{
     message: string;
+    confirmLabel?: string;
     onConfirm: () => void;
   } | null>(null);
 
@@ -202,6 +203,66 @@ function Palette() {
       },
     });
   };
+
+  // --- Export/Import ---
+  const handleExport = useCallback(() => {
+    const { definitions: defs, directories: dirs } = useStore.getState();
+    const data = {
+      version: 1,
+      definitions: defs,
+      directories: dirs,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'arch-complete-export.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const handleImport = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const raw = JSON.parse(event.target?.result as string);
+          if (!Array.isArray(raw.definitions)) {
+            throw new Error('Missing definitions array');
+          }
+          for (const def of raw.definitions) {
+            if (!def.id || !def.name || !Array.isArray(def.nodes) || !Array.isArray(def.edges)) {
+              throw new Error('Malformed definition entry');
+            }
+          }
+          if (raw.directories !== undefined && !Array.isArray(raw.directories)) {
+            throw new Error('directories must be an array');
+          }
+          setConfirmAction({
+            message: `This will replace all current data with ${raw.definitions.length} definition(s). Continue?`,
+            confirmLabel: 'Import',
+            onConfirm: () => {
+              useStore.getState().hydrate({
+                definitions: raw.definitions,
+                directories: raw.directories ?? [],
+                activeDefinitionId: raw.definitions.length > 0 ? raw.definitions[0].id : null,
+              });
+              setConfirmAction(null);
+            },
+          });
+        } catch (err) {
+          alert(`Import failed: ${err instanceof Error ? err.message : 'Invalid JSON file'}`);
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }, []);
 
   // --- DnD: directory drop zone handlers ---
   const handleDirDragOver = (e: React.DragEvent, dirId: string) => {
@@ -434,10 +495,34 @@ function Palette() {
         {renderLevel(null, 0)}
       </div>
 
+      <div className={styles.divider} />
+
+      {/* Import / Export section */}
+      <div className={styles.section}>
+        <div className={styles.sectionHeader}>Data</div>
+        <div className={styles.importExportActions}>
+          <button
+            className={styles.exportButton}
+            onClick={handleExport}
+            data-testid="export-button"
+          >
+            Export JSON
+          </button>
+          <button
+            className={styles.importButton}
+            onClick={handleImport}
+            data-testid="import-button"
+          >
+            Import JSON
+          </button>
+        </div>
+      </div>
+
       {/* Confirmation dialog */}
       {confirmAction && (
         <ConfirmDialog
           message={confirmAction.message}
+          confirmLabel={confirmAction.confirmLabel}
           onConfirm={confirmAction.onConfirm}
           onCancel={() => setConfirmAction(null)}
         />
