@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { ReactFlow, useReactFlow } from '@xyflow/react';
+import { ReactFlow, useReactFlow, Background, BackgroundVariant } from '@xyflow/react';
 import type { Node } from '@xyflow/react';
 import { nodeTypes } from '../nodes';
 import { useStore } from '../store/useStore';
@@ -139,8 +139,12 @@ function Canvas() {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             nodeTypes={nodeTypes}
+            snapToGrid
+            snapGrid={[20, 20]}
             fitView
-          />
+          >
+            <Background variant={BackgroundVariant.Dots} gap={20} size={1} />
+          </ReactFlow>
         </CanvasModeProvider>
       ) : (
         <div className={styles.emptyState} data-testid="empty-state">
