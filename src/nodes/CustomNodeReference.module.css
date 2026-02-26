@@ -1,0 +1,50 @@
+.node {
+  min-width: 160px;
+  min-height: 60px;
+  padding: 10px 16px;
+  background-color: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 8px;
+  position: relative;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #166534;
+  text-align: center;
+}
+
+.orphanedNode {
+  min-width: 160px;
+  min-height: 60px;
+  padding: 10px 16px;
+  background-color: #ffcccc;
+  border: 2px solid #ef4444;
+  border-radius: 8px;
+}
+
+.orphanedLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #991b1b;
+  text-align: center;
+}
+
+.handleLabel {
+  font-size: 10px;
+  color: #6b7280;
+  position: absolute;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.handleLabelLeft {
+  composes: handleLabel;
+  left: 12px;
+}
+
+.handleLabelRight {
+  composes: handleLabel;
+  right: 12px;
+}

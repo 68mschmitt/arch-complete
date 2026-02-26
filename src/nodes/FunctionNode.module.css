@@ -1,0 +1,13 @@
+.node {
+  min-width: 150px;
+  padding: 10px 12px;
+  background-color: #e9d5ff;
+  border: 1px solid #c084fc;
+  border-radius: 6px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b21a8;
+}
