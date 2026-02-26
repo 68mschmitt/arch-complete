@@ -9,8 +9,6 @@ import styles from './Canvas.module.css';
 
 function Canvas() {
   // Read active definition from store
-  const definitions = useStore((s) => s.definitions);
-  const activeDefinitionId = useStore((s) => s.activeDefinitionId);
   const activeDefinition = useStore((s) =>
     s.definitions.find((d) => d.id === s.activeDefinitionId),
   );
@@ -22,7 +20,6 @@ function Canvas() {
   const onNodesChange = useStore((s) => s.onNodesChange);
   const onEdgesChange = useStore((s) => s.onEdgesChange);
   const onConnect = useStore((s) => s.onConnect);
-  const setActiveDefinition = useStore((s) => s.setActiveDefinition);
   const setSidePanelDefinition = useStore((s) => s.setSidePanelDefinition);
   const addNode = useStore((s) => s.addNode);
   const darkMode = useStore((s) => s.darkMode);
@@ -103,29 +100,13 @@ function Canvas() {
     [screenToFlowPosition, addNode],
   );
 
-  // Handle definition switching
-  const handleDefinitionChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setActiveDefinition(e.target.value);
-    },
-    [setActiveDefinition],
-  );
 
   return (
     <div className={styles.canvas} data-testid="canvas">
-      {definitions.length > 0 && (
-        <select
-          data-testid="definition-selector"
-          className={styles.selector}
-          value={activeDefinitionId ?? ''}
-          onChange={handleDefinitionChange}
-        >
-          {definitions.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
+      {activeDefinition && (
+        <div className={styles.heading} data-testid="definition-heading">
+          {activeDefinition.name}
+        </div>
       )}
       {activeDefinition ? (
         <CanvasModeProvider mode="edit">

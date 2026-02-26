@@ -37,7 +37,7 @@ function App() {
           <Palette />
         </div>
         <button
-          className={styles.paletteToggle}
+          className={`${styles.paletteToggle} ${paletteCollapsed ? styles.paletteToggleCollapsed : ''}`}
           onClick={togglePalette}
           data-testid="palette-toggle"
         >

@@ -1,5 +1,9 @@
 .panel {
-  flex-shrink: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
   background-color: var(--bg-surface);
   border-top: 1px solid var(--border-panel);
   display: flex;
