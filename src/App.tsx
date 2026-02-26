@@ -1,12 +1,12 @@
 import { ReactFlowProvider } from '@xyflow/react';
+import { useStore } from './store/useStore';
 import Palette from './components/Palette';
 import Canvas from './components/Canvas';
 import SidePanel from './components/SidePanel';
 import styles from './App.module.css';
 
 function App() {
-  // Side panel is hidden by default (will be wired to store later)
-  const showSidePanel = false;
+  const sidePanelDefinitionId = useStore(s => s.sidePanelDefinitionId);
   
   return (
     <div className={styles.container}>
@@ -14,7 +14,7 @@ function App() {
       <ReactFlowProvider>
         <Canvas />
       </ReactFlowProvider>
-      {showSidePanel && <SidePanel />}
+      {sidePanelDefinitionId && <SidePanel />}
     </div>
   );
 }
