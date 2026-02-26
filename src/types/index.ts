@@ -49,4 +49,5 @@ export type AppState = {
   definitions: NodeDefinition[];
   activeDefinitionId: string | null;
   sidePanelDefinitionId: string | null;
+  paletteCollapsed: boolean;
 };

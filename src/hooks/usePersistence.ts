@@ -15,7 +15,9 @@ export function usePersistence() {
           const toSave = {
             definitions: state.definitions,
             activeDefinitionId: state.activeDefinitionId,
+            paletteCollapsed: state.paletteCollapsed,
             // DO NOT save sidePanelDefinitionId — transient UI state
+            // paletteCollapsed: user preference, persists across sessions
           };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
         } catch (err) {

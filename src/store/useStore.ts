@@ -9,6 +9,7 @@ type StoreState = {
   definitions: NodeDefinition[];
   activeDefinitionId: string | null;
   sidePanelDefinitionId: string | null;
+  paletteCollapsed: boolean;
 };
 
 type StoreActions = {
@@ -17,6 +18,7 @@ type StoreActions = {
   renameDefinition: (id: string, name: string) => void;
   setActiveDefinition: (id: string) => void;
   setSidePanelDefinition: (id: string | null) => void;
+  togglePalette: () => void;
   addNode: (node: Node) => void;
   removeNode: (nodeId: string) => void;
   updateNodeData: (nodeId: string, data: Partial<Record<string, unknown>>) => void;
@@ -25,7 +27,7 @@ type StoreActions = {
   onConnect: (connection: Connection) => void;
   getDefinition: (id: string) => NodeDefinition | undefined;
   getInputOutputNodes: (definitionId: string) => { inputs: Node[]; outputs: Node[] };
-  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null }) => void;
+  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null; paletteCollapsed?: boolean }) => void;
 };
 
 type StoreType = StoreState & StoreActions;
@@ -35,6 +37,7 @@ export const useStore = create<StoreType>()((set, get) => ({
   definitions: [],
   activeDefinitionId: null,
   sidePanelDefinitionId: null,
+  paletteCollapsed: false,
 
   // --- Actions ---
 
@@ -103,6 +106,10 @@ export const useStore = create<StoreType>()((set, get) => ({
 
   setSidePanelDefinition: (id: string | null) => {
     set({ sidePanelDefinitionId: id });
+  },
+
+  togglePalette: () => {
+    set({ paletteCollapsed: !get().paletteCollapsed });
   },
 
   addNode: (node: Node) => {
@@ -302,10 +309,11 @@ export const useStore = create<StoreType>()((set, get) => ({
     return { inputs, outputs };
   },
 
-  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null }) => {
+  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null; paletteCollapsed?: boolean }) => {
     set({
       definitions: savedState.definitions,
       activeDefinitionId: savedState.activeDefinitionId,
+      paletteCollapsed: savedState.paletteCollapsed ?? false,
     });
   },
 }));
