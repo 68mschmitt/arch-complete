@@ -2,11 +2,12 @@ import { create } from 'zustand';
 import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
 import type { Node, NodeChange, EdgeChange, Connection } from '@xyflow/react';
 
-import type { NodeDefinition } from '../types';
+import type { NodeDefinition, Directory } from '../types';
 import { NODE_TYPES } from '../types';
 
 type StoreState = {
   definitions: NodeDefinition[];
+  directories: Directory[];
   activeDefinitionId: string | null;
   sidePanelDefinitionId: string | null;
   paletteCollapsed: boolean;
@@ -14,13 +15,18 @@ type StoreState = {
 };
 
 type StoreActions = {
-  addDefinition: (name?: string) => void;
+  addDefinition: (name?: string, directoryId?: string | null) => void;
   removeDefinition: (id: string) => void;
   renameDefinition: (id: string, name: string) => void;
   setActiveDefinition: (id: string) => void;
   setSidePanelDefinition: (id: string | null) => void;
   togglePalette: () => void;
   toggleDarkMode: () => void;
+  addDirectory: (name?: string, parentId?: string | null) => void;
+  removeDirectory: (id: string) => void;
+  renameDirectory: (id: string, name: string) => void;
+  moveDefinitionToDirectory: (definitionId: string, directoryId: string | null) => void;
+  moveDirectoryToDirectory: (dirId: string, newParentId: string | null) => void;
   addNode: (node: Node) => void;
   removeNode: (nodeId: string) => void;
   updateNodeData: (nodeId: string, data: Partial<Record<string, unknown>>) => void;
@@ -29,7 +35,13 @@ type StoreActions = {
   onConnect: (connection: Connection) => void;
   getDefinition: (id: string) => NodeDefinition | undefined;
   getInputOutputNodes: (definitionId: string) => { inputs: Node[]; outputs: Node[] };
-  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null; paletteCollapsed?: boolean; darkMode?: boolean }) => void;
+  hydrate: (savedState: {
+    definitions: NodeDefinition[];
+    directories?: Directory[];
+    activeDefinitionId: string | null;
+    paletteCollapsed?: boolean;
+    darkMode?: boolean;
+  }) => void;
 };
 
 type StoreType = StoreState & StoreActions;
@@ -37,6 +49,7 @@ type StoreType = StoreState & StoreActions;
 export const useStore = create<StoreType>()((set, get) => ({
   // --- State ---
   definitions: [],
+  directories: [],
   activeDefinitionId: null,
   sidePanelDefinitionId: null,
   paletteCollapsed: false,
@@ -44,7 +57,7 @@ export const useStore = create<StoreType>()((set, get) => ({
 
   // --- Actions ---
 
-  addDefinition: (name?: string) => {
+  addDefinition: (name?: string, directoryId?: string | null) => {
     const { definitions } = get();
 
     let definitionName: string;
@@ -63,6 +76,7 @@ export const useStore = create<StoreType>()((set, get) => ({
     const newDefinition: NodeDefinition = {
       id: crypto.randomUUID(),
       name: definitionName,
+      directoryId: directoryId ?? null,
       nodes: [],
       edges: [],
     };
@@ -118,6 +132,93 @@ export const useStore = create<StoreType>()((set, get) => ({
   toggleDarkMode: () => {
     set({ darkMode: !get().darkMode });
   },
+
+  // --- Directory Actions ---
+
+  addDirectory: (name?: string, parentId?: string | null) => {
+    const { directories } = get();
+
+    let dirName: string;
+    if (name) {
+      dirName = name;
+    } else {
+      const folderCount = directories.filter((d) =>
+        d.name.startsWith('New Folder'),
+      ).length;
+      dirName =
+        folderCount === 0
+          ? 'New Folder'
+          : `New Folder ${folderCount + 1}`;
+    }
+
+    const newDir: Directory = {
+      id: crypto.randomUUID(),
+      name: dirName,
+      parentId: parentId ?? null,
+    };
+
+    set({ directories: [...directories, newDir] });
+  },
+
+  removeDirectory: (id: string) => {
+    const { directories, definitions } = get();
+    const dir = directories.find((d) => d.id === id);
+    if (!dir) return;
+
+    const parentId = dir.parentId;
+
+    // Move child directories to parent
+    const updatedDirs = directories
+      .filter((d) => d.id !== id)
+      .map((d) => (d.parentId === id ? { ...d, parentId } : d));
+
+    // Move child definitions to parent
+    const updatedDefs = definitions.map((d) =>
+      d.directoryId === id ? { ...d, directoryId: parentId } : d,
+    );
+
+    set({ directories: updatedDirs, definitions: updatedDefs });
+  },
+
+  renameDirectory: (id: string, name: string) => {
+    const { directories } = get();
+    set({
+      directories: directories.map((d) =>
+        d.id === id ? { ...d, name } : d,
+      ),
+    });
+  },
+
+  moveDefinitionToDirectory: (definitionId: string, directoryId: string | null) => {
+    const { definitions } = get();
+    set({
+      definitions: definitions.map((d) =>
+        d.id === definitionId ? { ...d, directoryId } : d,
+      ),
+    });
+  },
+
+  moveDirectoryToDirectory: (dirId: string, newParentId: string | null) => {
+    const { directories } = get();
+    // Prevent moving a directory into itself
+    if (dirId === newParentId) return;
+
+    // Prevent moving into own descendant (cycle)
+    let cursor = newParentId;
+    while (cursor !== null) {
+      if (cursor === dirId) return;
+      const parent = directories.find((d) => d.id === cursor);
+      cursor = parent?.parentId ?? null;
+    }
+
+    set({
+      directories: directories.map((d) =>
+        d.id === dirId ? { ...d, parentId: newParentId } : d,
+      ),
+    });
+  },
+
+  // --- Node/Edge Actions ---
 
   addNode: (node: Node) => {
     const { definitions, activeDefinitionId } = get();
@@ -316,9 +417,20 @@ export const useStore = create<StoreType>()((set, get) => ({
     return { inputs, outputs };
   },
 
-  hydrate: (savedState: { definitions: NodeDefinition[]; activeDefinitionId: string | null; paletteCollapsed?: boolean; darkMode?: boolean }) => {
+  hydrate: (savedState: {
+    definitions: NodeDefinition[];
+    directories?: Directory[];
+    activeDefinitionId: string | null;
+    paletteCollapsed?: boolean;
+    darkMode?: boolean;
+  }) => {
     set({
-      definitions: savedState.definitions,
+      // Normalize: ensure directoryId exists on all definitions (backward compat)
+      definitions: savedState.definitions.map((d) => ({
+        ...d,
+        directoryId: d.directoryId ?? null,
+      })),
+      directories: savedState.directories ?? [],
       activeDefinitionId: savedState.activeDefinitionId,
       paletteCollapsed: savedState.paletteCollapsed ?? false,
       darkMode: savedState.darkMode ?? false,

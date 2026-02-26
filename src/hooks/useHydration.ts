@@ -15,7 +15,13 @@ export function useHydration() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed.definitions && Array.isArray(parsed.definitions)) {
-          useStore.getState().hydrate(parsed);
+          useStore.getState().hydrate({
+            definitions: parsed.definitions,
+            directories: Array.isArray(parsed.directories) ? parsed.directories : [],
+            activeDefinitionId: parsed.activeDefinitionId,
+            paletteCollapsed: parsed.paletteCollapsed,
+            darkMode: parsed.darkMode,
+          });
         }
       }
     } catch (err) {

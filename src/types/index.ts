@@ -12,6 +12,9 @@ export const NODE_TYPES = {
 // DnD type for palette drag operations
 export const PALETTE_DND_TYPE = 'application/archcomplete-node';
 
+// DnD type for palette internal reorganization (moving nodes between directories)
+export const PALETTE_MOVE_DND_TYPE = 'application/archcomplete-palette-move';
+
 // Primitive node data types
 export type InputNodeData = {
   label: string;
@@ -36,10 +39,17 @@ export type CustomNodeReferenceData = {
   label: string;
 };
 
+// Directory for organizing custom nodes in the palette
+export type Directory = {
+  id: string;
+  name: string;
+  parentId: string | null;
+};
 // Node definition — each canvas IS a node definition
 export type NodeDefinition = {
   id: string;
   name: string;
+  directoryId: string | null;
   nodes: Node[];
   edges: Edge[];
 };
@@ -47,6 +57,7 @@ export type NodeDefinition = {
 // Application state shape
 export type AppState = {
   definitions: NodeDefinition[];
+  directories: Directory[];
   activeDefinitionId: string | null;
   sidePanelDefinitionId: string | null;
   paletteCollapsed: boolean;

@@ -14,6 +14,7 @@ export function usePersistence() {
         try {
           const toSave = {
             definitions: state.definitions,
+            directories: state.directories,
             activeDefinitionId: state.activeDefinitionId,
             paletteCollapsed: state.paletteCollapsed,
             darkMode: state.darkMode,

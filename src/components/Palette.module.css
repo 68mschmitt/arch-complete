@@ -16,7 +16,7 @@
   font-weight: 600;
   font-size: 14px;
   color: var(--text-primary);
-  margin-bottom: 12px;
+  margin-bottom: 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -26,6 +26,11 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 4px;
 }
 
 .divider {
@@ -56,7 +61,10 @@
   cursor: grabbing;
 }
 
-.newNodeButton {
+/* --- New Node / Folder buttons --- */
+
+.newNodeButton,
+.newFolderButton {
   padding: 4px 10px;
   font-size: 12px;
   font-weight: 500;
@@ -68,13 +76,121 @@
   transition: background-color 0.2s ease;
 }
 
-.newNodeButton:hover {
+.newNodeButton:hover,
+.newFolderButton:hover {
   background-color: var(--accent-blue-hover);
 }
 
-.newNodeButton:active {
+.newNodeButton:active,
+.newFolderButton:active {
   background-color: var(--accent-blue-active);
 }
+
+.newFolderButton {
+  background-color: var(--text-secondary);
+}
+
+.newFolderButton:hover {
+  background-color: var(--text-muted);
+}
+
+.newFolderButton:active {
+  background-color: var(--text-placeholder);
+}
+
+/* --- Directory tree --- */
+
+.treeLevel {
+  /* Nesting is handled by inline paddingLeft */
+}
+
+.directoryGroup {
+  margin-bottom: 4px;
+}
+
+.directoryHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border-radius: 4px;
+  user-select: none;
+  color: var(--text-primary);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.directoryHeader:hover {
+  background-color: var(--bg-item-hover);
+}
+
+.directoryDragOver {
+  background-color: var(--bg-item-hover);
+  border-color: var(--accent-blue);
+}
+
+.expandToggle {
+  flex-shrink: 0;
+  width: 16px;
+  font-size: 10px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.expandToggle:hover {
+  color: var(--text-primary);
+}
+
+.folderIcon {
+  flex-shrink: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.directoryName {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.directoryActions {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.directoryHeader:hover .directoryActions {
+  opacity: 1;
+}
+
+.dirActionButton {
+  padding: 0 5px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-placeholder);
+  background: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.dirActionButton:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+}
+
+/* --- Custom node entries --- */
 
 .customEntry {
   display: flex;
