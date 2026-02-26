@@ -1,10 +1,11 @@
 import { memo, useEffect, useState, useCallback } from 'react';
-import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
+import { Handle, Position, useUpdateNodeInternals, useReactFlow } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
 import type { CustomNodeReferenceData } from '../types';
 import { NODE_TYPES } from '../types';
 import { useStore } from '../store/useStore';
 import styles from './CustomNodeReference.module.css';
+import { useCanvasMode } from '../contexts/CanvasMode';
 
 function CustomNodeReference({
   id,
@@ -14,6 +15,8 @@ function CustomNodeReference({
   const [editingLabel, setEditingLabel] = useState(false);
   const [draftLabel, setDraftLabel] = useState(data.label);
   const updateNodeInternals = useUpdateNodeInternals();
+  const { deleteElements } = useReactFlow();
+  const mode = useCanvasMode();
 
   const handleDoubleClick = useCallback(() => {
     setEditingLabel(true);
@@ -33,6 +36,11 @@ function CustomNodeReference({
       setDraftLabel(data.label);
     }
   }, [handleSaveLabel, data.label]);
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteElements({ nodes: [{ id }] });
+  }, [id, deleteElements]);
 
   const definition = useStore((state) =>
     state.definitions.find((d) => d.id === data.definitionId) ?? null,
@@ -69,6 +77,15 @@ function CustomNodeReference({
             <span onDoubleClick={handleDoubleClick}>Missing: {data.label}</span>
           )}
         </div>
+        {mode === 'edit' && (
+          <button
+            className={`nodrag nopan ${styles.deleteButton}`}
+            onClick={handleDelete}
+            data-testid="node-delete-button"
+          >
+            ×
+          </button>
+        )}
       </div>
     );
   }
@@ -133,6 +150,15 @@ function CustomNodeReference({
           </span>
         </div>
       ))}
+      {mode === 'edit' && (
+        <button
+          className={`nodrag nopan ${styles.deleteButton}`}
+          onClick={handleDelete}
+          data-testid="node-delete-button"
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 }

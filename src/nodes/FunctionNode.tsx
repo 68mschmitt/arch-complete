@@ -1,14 +1,23 @@
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position, useReactFlow } from '@xyflow/react';
 import type { NodeProps, Node } from '@xyflow/react';
 import type { FunctionNodeData } from '../types';
 import { useStore } from '../store/useStore';
 import styles from './FunctionNode.module.css';
+import { useCanvasMode } from '../contexts/CanvasMode';
 
 function FunctionNode({ id, data, isConnectable }: NodeProps<Node<FunctionNodeData>>) {
   const updateNodeData = useStore(s => s.updateNodeData);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(data.label);
+
+  const { deleteElements } = useReactFlow();
+  const mode = useCanvasMode();
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteElements({ nodes: [{ id }] });
+  }, [id, deleteElements]);
 
   const handleDoubleClick = useCallback(() => {
     setEditing(true);
@@ -52,6 +61,15 @@ function FunctionNode({ id, data, isConnectable }: NodeProps<Node<FunctionNodeDa
         position={Position.Right}
         isConnectable={isConnectable}
       />
+      {mode === 'edit' && (
+        <button
+          className={`nodrag nopan ${styles.deleteButton}`}
+          onClick={handleDelete}
+          data-testid="node-delete-button"
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 }

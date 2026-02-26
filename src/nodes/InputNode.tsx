@@ -1,14 +1,18 @@
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position, useReactFlow } from '@xyflow/react';
 import type { NodeProps, Node } from '@xyflow/react';
 import type { InputNodeData } from '../types';
 import { useStore } from '../store/useStore';
 import styles from './InputNode.module.css';
+import { useCanvasMode } from '../contexts/CanvasMode';
 
 function InputNode({ id, data, isConnectable }: NodeProps<Node<InputNodeData>>) {
   const updateNodeData = useStore(s => s.updateNodeData);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(data.label);
+  const { deleteElements } = useReactFlow();
+  const mode = useCanvasMode();
+
 
   const handleDoubleClick = useCallback(() => {
     setEditing(true);
@@ -28,6 +32,11 @@ function InputNode({ id, data, isConnectable }: NodeProps<Node<InputNodeData>>) 
       setDraft(data.label);
     }
   }, [handleSave, data.label]);
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteElements({ nodes: [{ id }] });
+  }, [id, deleteElements]);
+
   return (
     <div className={styles.node}>
       {editing ? (
@@ -47,6 +56,15 @@ function InputNode({ id, data, isConnectable }: NodeProps<Node<InputNodeData>>) 
         position={Position.Right}
         isConnectable={isConnectable}
       />
+      {mode === 'edit' && (
+        <button
+          className={`nodrag nopan ${styles.deleteButton}`}
+          onClick={handleDelete}
+          data-testid="node-delete-button"
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 }

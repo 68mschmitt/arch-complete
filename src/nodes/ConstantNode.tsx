@@ -1,12 +1,15 @@
 import { memo, useState, useCallback } from 'react';
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position, useReactFlow } from '@xyflow/react';
 import type { NodeProps, Node } from '@xyflow/react';
 import type { ConstantNodeData } from '../types';
 import { useStore } from '../store/useStore';
 import styles from './ConstantNode.module.css';
+import { useCanvasMode } from '../contexts/CanvasMode';
 
 function ConstantNode({ id, data, isConnectable }: NodeProps<Node<ConstantNodeData>>) {
   const updateNodeData = useStore(s => s.updateNodeData);
+  const { deleteElements } = useReactFlow();
+  const mode = useCanvasMode();
   const [editingLabel, setEditingLabel] = useState(false);
   const [draftLabel, setDraftLabel] = useState(data.label);
 
@@ -32,6 +35,11 @@ function ConstantNode({ id, data, isConnectable }: NodeProps<Node<ConstantNodeDa
   const handleValueChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     updateNodeData(id, { value: e.target.value });
   }, [id, updateNodeData]);
+
+  const handleDelete = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteElements({ nodes: [{ id }] });
+  }, [id, deleteElements]);
   return (
     <div className={styles.node}>
       {editingLabel ? (
@@ -57,6 +65,15 @@ function ConstantNode({ id, data, isConnectable }: NodeProps<Node<ConstantNodeDa
         position={Position.Right}
         isConnectable={isConnectable}
       />
+      {mode === 'edit' && (
+        <button
+          className={`nodrag nopan ${styles.deleteButton}`}
+          onClick={handleDelete}
+          data-testid="node-delete-button"
+        >
+          ×
+        </button>
+      )}
     </div>
   );
 }

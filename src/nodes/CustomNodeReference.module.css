@@ -22,6 +22,7 @@
   background-color: #ffcccc;
   border: 2px solid #ef4444;
   border-radius: 8px;
+  position: relative;
 }
 
 .orphanedLabel {
@@ -47,4 +48,35 @@
 .handleLabelRight {
   composes: handleLabel;
   right: 12px;
+}
+
+.deleteButton {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  color: #999;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  z-index: 10;
+}
+
+.node:hover .deleteButton,
+.orphanedNode:hover .deleteButton {
+  opacity: 1;
+}
+
+.deleteButton:hover {
+  color: #e53e3e;
+  border-color: #e53e3e;
 }
