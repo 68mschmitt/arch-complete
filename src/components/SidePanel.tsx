@@ -1,6 +1,7 @@
 import { ReactFlowProvider, ReactFlow } from '@xyflow/react';
 import { useStore } from '../store/useStore';
 import { nodeTypes } from '../nodes';
+import { CanvasModeProvider } from '../contexts/CanvasMode';
 import styles from './SidePanel.module.css';
 
 function SidePanel() {
@@ -46,19 +47,21 @@ function SidePanel() {
       </div>
       <div className={styles.preview}>
         <ReactFlowProvider>
-          <ReactFlow
-            nodes={definition.nodes}
-            edges={definition.edges}
-            nodeTypes={nodeTypes}
-            nodesDraggable={false}
-            nodesConnectable={false}
-            elementsSelectable={false}
-            panOnDrag={false}
-            zoomOnScroll={false}
-            zoomOnDoubleClick={false}
-            preventScrolling={false}
-            fitView
-          />
+          <CanvasModeProvider mode="preview">
+            <ReactFlow
+              nodes={definition.nodes}
+              edges={definition.edges}
+              nodeTypes={nodeTypes}
+              nodesDraggable={false}
+              nodesConnectable={false}
+              elementsSelectable={false}
+              panOnDrag={false}
+              zoomOnScroll={false}
+              zoomOnDoubleClick={false}
+              preventScrolling={false}
+              fitView
+            />
+          </CanvasModeProvider>
         </ReactFlowProvider>
       </div>
     </div>

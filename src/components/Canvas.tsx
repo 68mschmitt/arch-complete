@@ -4,6 +4,7 @@ import type { Node } from '@xyflow/react';
 import { nodeTypes } from '../nodes';
 import { useStore } from '../store/useStore';
 import { NODE_TYPES, PALETTE_DND_TYPE } from '../types';
+import { CanvasModeProvider } from '../contexts/CanvasMode';
 import styles from './Canvas.module.css';
 
 function Canvas() {
@@ -126,19 +127,21 @@ function Canvas() {
         </select>
       )}
       {activeDefinition ? (
-        <ReactFlow
-          nodes={activeDefinition.nodes}
-          edges={activeDefinition.edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={handleNodeClick}
-          onPaneClick={handlePaneClick}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          nodeTypes={nodeTypes}
-          fitView
-        />
+        <CanvasModeProvider mode="edit">
+          <ReactFlow
+            nodes={activeDefinition.nodes}
+            edges={activeDefinition.edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onNodeClick={handleNodeClick}
+            onPaneClick={handlePaneClick}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            nodeTypes={nodeTypes}
+            fitView
+          />
+        </CanvasModeProvider>
       ) : (
         <div className={styles.emptyState} data-testid="empty-state">
           Select or create a definition to begin

@@ -195,13 +195,59 @@ export const useStore = create<StoreType>()((set, get) => ({
     const { definitions, activeDefinitionId } = get();
     if (!activeDefinitionId) return;
 
+    // Separate remove changes to identify deleted Input/Output nodes
+    const removeChanges = changes.filter((c) => c.type === 'remove');
+    
+    // Collect handle IDs from removed Input/Output nodes
+    const removedHandleIds = new Set<string>();
+    if (removeChanges.length > 0) {
+      const activeDef = definitions.find((d) => d.id === activeDefinitionId);
+      if (activeDef) {
+        removeChanges.forEach((change) => {
+          if (change.type === 'remove') {
+            const removedNode = activeDef.nodes.find((n) => n.id === change.id);
+            if (removedNode) {
+              const isInterfaceNode = removedNode.type === NODE_TYPES.INPUT || removedNode.type === NODE_TYPES.OUTPUT;
+              if (isInterfaceNode) {
+                const handleId = removedNode.type === NODE_TYPES.INPUT
+                  ? `input-${change.id}`
+                  : `output-${change.id}`;
+                removedHandleIds.add(handleId);
+              }
+            }
+          }
+        });
+      }
+    }
+
     set({
       definitions: definitions.map((d) => {
-        if (d.id !== activeDefinitionId) return d;
-        return {
-          ...d,
-          nodes: applyNodeChanges(changes, d.nodes),
-        };
+        if (d.id === activeDefinitionId) {
+          // Apply all node changes (including removes) to active definition
+          return {
+            ...d,
+            nodes: applyNodeChanges(changes, d.nodes),
+          };
+        }
+
+        // For other definitions: clean up edges if they have instances and removed handles exist
+        if (removedHandleIds.size > 0) {
+          const hasInstances = d.nodes.some(
+            (n) => n.type === NODE_TYPES.CUSTOM_REFERENCE &&
+                   (n.data as { definitionId?: string }).definitionId === activeDefinitionId,
+          );
+
+          if (hasInstances) {
+            return {
+              ...d,
+              edges: d.edges.filter((e) => {
+                return !removedHandleIds.has(e.sourceHandle ?? '') && !removedHandleIds.has(e.targetHandle ?? '');
+              }),
+            };
+          }
+        }
+
+        return d;
       }),
     });
   },
