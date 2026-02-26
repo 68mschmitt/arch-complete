@@ -16,6 +16,7 @@ function Palette() {
   const renameDefinition = useStore((s) => s.renameDefinition);
   const renameDirectory = useStore((s) => s.renameDirectory);
   const moveDefinitionToDirectory = useStore((s) => s.moveDefinitionToDirectory);
+  const moveDirectoryToDirectory = useStore((s) => s.moveDirectoryToDirectory);
 
   // --- Editing state ---
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -88,9 +89,22 @@ function Palette() {
     // For palette reorganization
     event.dataTransfer.setData(
       PALETTE_MOVE_DND_TYPE,
-      JSON.stringify({ definitionId }),
+      JSON.stringify({ type: 'node', id: definitionId }),
     );
     event.dataTransfer.effectAllowed = 'move';
+  };
+
+  // --- Directory DnD (palette-reorder only) ---
+  const handleDirDragStart = (
+    event: React.DragEvent<HTMLDivElement>,
+    dirId: string,
+  ) => {
+    event.dataTransfer.setData(
+      PALETTE_MOVE_DND_TYPE,
+      JSON.stringify({ type: 'directory', id: dirId }),
+    );
+    event.dataTransfer.effectAllowed = 'move';
+    event.stopPropagation();
   };
 
   // --- Directory expand/collapse ---
@@ -201,7 +215,7 @@ function Palette() {
     setDragOverTarget(null);
   };
 
-  const handleDirDrop = (e: React.DragEvent, dirId: string | null) => {
+  const handleDirDrop = (e: React.DragEvent, targetDirId: string | null) => {
     e.preventDefault();
     e.stopPropagation();
     setDragOverTarget(null);
@@ -210,8 +224,16 @@ function Palette() {
     if (!moveData) return;
 
     try {
-      const { definitionId } = JSON.parse(moveData) as { definitionId: string };
-      moveDefinitionToDirectory(definitionId, dirId);
+      const payload = JSON.parse(moveData) as { type: string; id: string };
+      if (payload.type === 'node') {
+        moveDefinitionToDirectory(payload.id, targetDirId);
+      } else if (payload.type === 'directory') {
+        moveDirectoryToDirectory(payload.id, targetDirId);
+        // Auto-expand the target so the moved folder is visible
+        if (targetDirId) {
+          setExpandedDirs((prev) => new Set(prev).add(targetDirId));
+        }
+      }
     } catch {
       // Invalid data — ignore
     }
@@ -265,6 +287,8 @@ function Palette() {
               <div
                 className={`${styles.directoryHeader} ${isDragOver ? styles.directoryDragOver : ''}`}
                 data-testid="directory-header"
+                draggable={editingDirId !== dir.id}
+                onDragStart={(e) => handleDirDragStart(e, dir.id)}
               >
                 <span
                   className={styles.expandToggle}
@@ -301,6 +325,14 @@ function Palette() {
                     data-testid="directory-new-node"
                   >
                     +
+                  </button>
+                  <button
+                    className={styles.dirActionButton}
+                    onClick={() => handleNewFolder(dir.id)}
+                    title="New subfolder"
+                    data-testid="directory-new-folder"
+                  >
+                    📁
                   </button>
                   <button
                     className={styles.dirActionButton}
